@@ -15,10 +15,44 @@
 // You should have received a copy of the GNU General Public License
 // along with json.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::collections::HashMap;
+
+enum Value {
+    Null,
+    True,
+    False,
+    String(String),
+    Number(Number),
+    Array(Vec<Value>),
+    Object(HashMap<String, Value>),
+}
+
+enum Number {
+    Integer(isize),
+    Float(f64),
+}
+
+struct Json {
+    root: Value,
+}
+
+
+impl Json {
+    fn new() -> Json {
+        return Json { root: Value::Object(HashMap::new()) };
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+    fn to_string() {
+        let json = Json::new();
+        assert!(match json.root {
+            Value::Object(x) => { x.len() == 0 }
+            _ => false
+        });
     }
 }
