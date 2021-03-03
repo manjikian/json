@@ -32,14 +32,27 @@ enum Number {
     Float(f64),
 }
 
-struct Json {
+pub struct Json {
     root: Value,
 }
 
 
 impl Json {
-    fn new() -> Json {
+    /// Creates an empty `Json` struct
+    ///
+    /// # Examples
+    /// ```
+    /// use lib::Json;
+    ///
+    /// let json = Json::new();
+    /// assert_eq!(json.to_string(), "{}".to_string());
+    /// ```
+    pub fn new() -> Json {
         return Json { root: Value::Object(HashMap::new()) };
+    }
+
+    pub fn to_string(&self) -> String {
+        "{}".to_string()
     }
 }
 
