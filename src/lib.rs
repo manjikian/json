@@ -71,7 +71,7 @@ impl Value {
             Value::True => { String::from("True") }
             Value::False => { String::from("False") }
             Value::String(s) => { s.clone() }
-            Value::Array(v) => { String::from("dummy") }
+            Value::Array(v) => { array_to_string(v) }
             Value::Object(h) => { String::from("dummy") }
             Value::Number(n) => {
                 match n {
@@ -81,6 +81,20 @@ impl Value {
             }
         }
     }
+}
+
+fn array_to_string(vector: &Vec<Value>) -> String {
+    if vector.len() == 0 { return "[]".to_string(); }
+    let mut result = String::new();
+    result.push('[');
+    for item in vector {
+        result.push_str(item.to_string().as_str());
+        result.push_str(", ");
+    }
+    result.pop();
+    result.pop();
+    result.push(']');
+    result
 }
 
 pub struct Json {
