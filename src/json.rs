@@ -23,7 +23,7 @@ pub struct Json {
 }
 
 impl Json {
-    /// Creates an empty `Json`
+    /// Creates a `Json` that contains an empty `Value::Object(Hashmap<String, Value>)`
     ///
     /// # Examples
     /// ```
@@ -51,6 +51,22 @@ impl Json {
     }
 }
 
+/// A value can be a string, or a number, or true or false or null, or an object or an array.
+/// These structures can be nested.
+///
+/// # Examples
+/// ```
+/// use json::{Value, Number};
+/// use std::collections::HashMap;
+///
+/// let null_value = Value::Null;
+/// let true_value = Value::True;
+/// let false_value = Value::False;
+/// let string_value = Value::String("abs".to_string());
+/// let number_value = Value::Number(Number::Integer(0));
+/// let array_value = Value::Array(Vec::new());
+/// let object_value = Value::Object(HashMap::new());
+/// ```
 pub enum Value {
     Null,
     True,
@@ -62,6 +78,14 @@ pub enum Value {
     Object(HashMap<String, Value>),
 }
 
+/// A number is either an integer or a floating point
+///
+/// ```
+/// use json::Number;
+///
+/// let integer_number = Number::Integer(-3isize);
+/// let float_number = Number::Float(2.5f64);
+/// ```
 pub enum Number {
     Integer(isize),
     Float(f64),
