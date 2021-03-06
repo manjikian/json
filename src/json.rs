@@ -19,7 +19,7 @@
 use std::collections::HashMap;
 
 pub struct Json {
-    pub root: Value,
+    pub element: Value,
 }
 
 impl Json {
@@ -33,7 +33,7 @@ impl Json {
     /// assert_eq!(json.to_string(), "{}".to_string());
     /// ```
     pub fn new() -> Json {
-        return Json { root: Value::Object(HashMap::new()) };
+        return Json { element: Value::Object(HashMap::new()) };
     }
 
     /// Returns a `String` representation of the `Json`
@@ -43,11 +43,25 @@ impl Json {
     /// use json::{Json, Value};
     ///
     /// let mut json = Json::new();
-    /// json.root.insert("item".to_string(), Value::True);
+    /// json.element.insert("item".to_string(), Value::True);
     /// assert_eq!(json.to_string(), "{\n\t\"item\" : True\n}".to_string());
     /// ```
     pub fn to_string(&self) -> String {
-        self.root.to_string()
+        self.element.to_string()
+    }
+
+    /// Replaces the `Value` in the `Json.element`
+    ///
+    /// # Examples
+    /// ```
+    /// use json::{Json, Value};
+    ///
+    /// let mut json = Json::new();
+    /// json.replace_root(Value::True);
+    /// assert_eq!("True".to_string(), json.to_string());
+    /// ```
+    pub fn replace_root(&mut self, value : Value){
+        self.element = value;
     }
 }
 
