@@ -1,6 +1,6 @@
 // Copyright © 2021 Hovig Manjikian
 //
-// This file is part of mmap_ci.
+// This file is part of json.
 //
 // json is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,4 +15,21 @@
 // You should have received a copy of the GNU General Public License
 // along with json.  If not, see <https://www.gnu.org/licenses/>.
 
-mod json;
+//! json
+//!
+//! GNU GPL licensed
+//!
+//! json is a library for parsing JSON structures from string format to a Rust
+//! structure and vice versa. The API is minimalistic and simple. The solution
+//! is thoroughly tested and guarantees good reliability. The implemented parser
+//! follows the grammar defined in [ECMA-404] standard.
+//!
+//! [ECMA-404]: https://www.ecma-international.org/publications-and-standards/standards/ecma-404/
+
+/// The module that implements the Json structure
+pub mod json;
+
+/// The module that implements the json values. A json value can be a string, or
+/// a number, or true or false or null, or an object or an array. These
+/// structures can be nested.
+pub mod value;
