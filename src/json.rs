@@ -19,7 +19,7 @@
 use std::collections::HashMap;
 
 pub struct Json {
-    pub element: Box<dyn Value>,
+    pub element: Box<dyn JsonValue>,
 }
 
 impl Json {
@@ -32,18 +32,18 @@ impl Json {
     /// let json = Json::new();
     /// assert_eq!(json.to_string(), "{}".to_string());
     /// ```
-    pub fn new() -> Box<Json> {
-        return Box::new(Json { element: Box::new(JObject { value: HashMap::new() }) });
+    pub fn new() -> Json {
+        return Json { element: Box::new(JObject { value: HashMap::new() }) };
     }
 
     /// Returns a `String` representation of the `Json`
     ///
     /// # Examples
     /// ```
-    /// use json::{Json, Value};
+    /// use json::{Json, JTrue, JString};
     ///
     /// let mut json = Json::new();
-    /// json.element.insert("item".to_string(), Value::True);
+    /// json.element.value.insert(JString{value: "item".to_string()}, JTrue);
     /// assert_eq!(json.to_string(), "{\n\t\"item\" : True\n}".to_string());
     /// ```
     pub fn to_string(&self) -> String {
@@ -60,78 +60,12 @@ impl Json {
     /// json.replace_element(Box::new(JTrue));
     /// assert_eq!("True".to_string(), json.to_string());
     /// ```
-    pub fn replace_element(&mut self, value: Box<dyn Value>) {
+    pub fn replace_element(&mut self, value: Box<dyn JsonValue>) {
         self.element = value;
     }
 }
 
-/*
-/// A value can be a string, or a number, or true or false or null, or an object or an array.
-/// These structures can be nested.
-///
-/// # Examples
-/// ```
-/// use json::{Value, Number};
-/// use std::collections::HashMap;
-///
-/// let null_value = Value::Null;
-/// let true_value = Value::True;
-/// let false_value = Value::False;
-/// let string_value = Value::String("abs".to_string());
-/// let number_value = Value::Number(Number::Integer(0));
-/// let array_value = Value::Array(Vec::new());
-/// let object_value = Value::Object(HashMap::new());
-/// ```
-pub enum Value {
-    Null,
-    True,
-    False,
-    String(String),
-    Number(Number),
-    Array(Vec<Value>),
-    // Would have been much nicer if the key was Value::String
-    Object(HashMap<String, Value>),
-}
-
-/// A number is either an integer or a floating point
-///
-/// ```
-/// use json::Number;
-///
-/// let integer_number = Number::Integer(-3isize);
-/// let float_number = Number::Float(2.5f64);
-/// ```
-pub enum Number {
-    Integer(isize),
-    Float(f64),
-}
-
-impl Value {
-    fn to_string(&self) -> String {
-        match self {
-            Value::Null => { String::from("Null") }
-            Value::True => { String::from("True") }
-            Value::False => { String::from("False") }
-            Value::String(s) => {
-                let mut str = "\"".to_string();
-                str.push_str(&s.clone());
-                str.push('\"');
-                str
-            }
-            Value::Array(v) => { array_to_string(v) }
-            Value::Object(h) => { hashmap_to_string(h) }
-            Value::Number(n) => {
-                match n {
-                    Number::Integer(i) => { format!("{}", i) }
-                    Number::Float(f) => { format!("{}", f) }
-                }
-            }
-        }
-    }
-}
-*/
-
-fn array_to_string(vector: &Vec<Box<dyn Value>>) -> String {
+fn array_to_string(vector: &Vec<Box<dyn JsonValue>>) -> String {
     if vector.len() == 0 { return "[]".to_string(); }
     let mut result = String::new();
     result.push('[');
@@ -145,7 +79,7 @@ fn array_to_string(vector: &Vec<Box<dyn Value>>) -> String {
     result
 }
 
-fn hashmap_to_string(hashmap: &HashMap<JString, Box<dyn Value>>) -> String {
+fn hashmap_to_string(hashmap: &HashMap<JString, Box<dyn JsonValue>>) -> String {
     if hashmap.len() == 0 { return "{}".to_string(); }
     let mut result = String::new();
     result.push_str("{\n");
@@ -162,43 +96,74 @@ fn hashmap_to_string(hashmap: &HashMap<JString, Box<dyn Value>>) -> String {
     result
 }
 
-/// A value can be a string, or a number, or true or false or null, or an object or an array.
-/// These structures can be nested.
-pub trait Value {
+/// A trait for json values. A json value can be a string, or a number, or true or false or null,
+/// or an object or an array. These structures can be nested.
+pub trait JsonValue {
     fn to_string(&self) -> String;
 }
 
+/// The json value True.
+///
+/// # Examples
+/// ```
+/// use json::JTrue;
+///
+/// let j_true = JTrue;
+/// ```
 pub struct JTrue;
 
-impl Value for JTrue {
+impl JsonValue for JTrue {
     fn to_string(&self) -> String {
         "True".to_string()
     }
 }
 
+/// The json value False.
+///
+/// # Examples
+/// ```
+/// use json::JFalse;
+///
+/// let j_false = JFalse;
+/// ```
 pub struct JFalse;
 
-impl Value for JFalse {
+impl JsonValue for JFalse {
     fn to_string(&self) -> String {
         "False".to_string()
     }
 }
 
-
+/// The json value Null.
+///
+/// # Examples
+/// ```
+/// use json::JNull;
+///
+/// let j_null = JNull;
+/// ```
 pub struct JNull;
 
-impl Value for JNull {
+impl JsonValue for JNull {
     fn to_string(&self) -> String {
         "Null".to_string()
     }
 }
 
+/// The json value String.
+///
+/// # Examples
+/// ```
+/// use json::JString;
+///
+/// let j_string = JString{value : "abc".to_string()};
+/// ```
 #[derive(Hash, PartialEq, Eq)]
 pub struct JString {
-    value: String,
+    pub value: String,
 }
 
-impl Value for JString {
+impl JsonValue for JString {
     fn to_string(&self) -> String {
         let mut str = "\"".to_string();
         str.push_str(self.value.as_str());
@@ -207,7 +172,42 @@ impl Value for JString {
     }
 }
 
-impl Value for JNumber {
+/// The json value Number.
+///
+/// # Examples
+/// ```
+/// use json::JNumber;
+///
+/// let j_number = JNumber::form_string("-3".to_string()).unwrap();
+/// ```
+pub struct JNumber {
+    value: Number
+}
+
+impl JNumber {
+    /// Parses a string to a Number
+    ///
+    /// # Examples
+    /// ```
+    /// use json::{JNumber, JsonValue};
+    ///
+    /// let j_number = JNumber::form_string("3.4".to_string()).unwrap();
+    /// assert_eq!(j_number.to_string(), "3.4".to_string());
+    /// ```
+    pub fn form_string(string: String) -> Result<JNumber, &'static str> {
+        match string.parse::<i64>() {
+            Ok(i) => { Result::Ok(JNumber { value: Number::Integer(i) }) }
+            Err(_) => {
+                match string.parse::<f64>() {
+                    Ok(f) => { Result::Ok(JNumber { value: Number::Float(f) }) }
+                    Err(_) => { Result::Err("Unable to parse input") }
+                }
+            }
+        }
+    }
+}
+
+impl JsonValue for JNumber {
     fn to_string(&self) -> String {
         match self.value {
             Number::Integer(i) => { i.to_string() }
@@ -216,38 +216,43 @@ impl Value for JNumber {
     }
 }
 
-pub struct JNumber {
-    value: Number
-}
-
-/// A number is either an integer or a floating point
-///
-/// ```
-/// use json::Number;
-///
-/// let integer_number = Number::Integer(-3isize);
-/// let float_number = Number::Float(2.5f64);
-/// ```
-pub enum Number {
+enum Number {
     Integer(i64),
     Float(f64),
 }
 
+/// The json value Array.
+///
+/// # Examples
+/// ```
+/// use json::JArray;
+///
+/// let j_array = JArray{value: Vec::new()};
+/// ```
 pub struct JArray {
-    value: Vec<Box<dyn Value>>
+    pub value: Vec<Box<dyn JsonValue>>
 }
 
-impl Value for JArray {
+impl JsonValue for JArray {
     fn to_string(&self) -> String {
         array_to_string(&self.value)
     }
 }
 
+/// The json value Object.
+///
+/// # Examples
+/// ```
+/// use json::JObject;
+/// use std::collections::HashMap;
+///
+/// let j_object = JObject{value: HashMap::new()};
+/// ```
 pub struct JObject {
-    value: HashMap<JString, Box<dyn Value>>
+    pub value: HashMap<JString, Box<dyn JsonValue>>
 }
 
-impl Value for JObject {
+impl JsonValue for JObject {
     fn to_string(&self) -> String {
         hashmap_to_string(&self.value)
     }
@@ -281,7 +286,7 @@ mod tests {
 
     #[test]
     fn hashmap() {
-        let mut h: HashMap<JString, Box<dyn Value>> = HashMap::new();
+        let mut h: HashMap<JString, Box<dyn JsonValue>> = HashMap::new();
         h.insert(JString { value: "bool_entry".to_string() }, Box::new(JFalse));
         let expected = r#"{
 	"bool_entry" : False
@@ -303,5 +308,27 @@ mod tests {
         assert_eq!(a.value.len(), 2);
         assert_eq!(a.value[0].to_string(), "True");
         assert_eq!(a.value[1].to_string(), "False");
+    }
+
+    #[test]
+    fn replace_element_test() {
+        let mut json = Json::new();
+        assert_eq!(json.to_string(), "{}".to_string());
+        json.replace_element(Box::new(JTrue));
+        assert_eq!(json.to_string(), "True".to_string());
+    }
+
+    #[test]
+    fn number_from_string_test() {
+        let num = JNumber::form_string("3".to_string()).unwrap();
+        assert_eq!(num.to_string(), "3".to_string());
+        let num = JNumber::form_string("-2".to_string()).unwrap();
+        assert_eq!(num.to_string(), "-2".to_string());
+        let num = JNumber::form_string("0".to_string()).unwrap();
+        assert_eq!(num.to_string(), "0".to_string());
+        let num = JNumber::form_string("3.5".to_string()).unwrap();
+        assert_eq!(num.to_string(), "3.5".to_string());
+        let num = JNumber::form_string("-2.3".to_string()).unwrap();
+        assert_eq!(num.to_string(), "-2.3".to_string());
     }
 }
